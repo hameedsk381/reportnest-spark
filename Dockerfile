@@ -1,33 +1,25 @@
-# Use latest Node.js image as base
-FROM node:latest AS build
+# Stage 1: Build the React app
+FROM node:18-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package files and install dependencies
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
 
-# Copy all files
+# Copy source files and build
 COPY . .
-
-# Build the app
 RUN npm run build
 
-# Use nginx to serve the app
+# Stage 2: Serve the app using Nginx
 FROM nginx:alpine
 
-# Copy built app from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy built assets from the builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy nginx config
+# Copy custom Nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
+# Expose port 80 and start Nginx
 EXPOSE 80
-
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
-
