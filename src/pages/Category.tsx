@@ -1,35 +1,51 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
-import { getArticlesByCategory, getCategoryBySlug } from '@/lib/data';
+import { fetchArticlesByCategory, fetchCategoryBySlug } from '@/lib/supabase';
+import { Article, Category as CategoryType } from '@/lib/data';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CategoryList from '@/components/CategoryList';
 import ArticleCard from '@/components/ArticleCard';
 import NewsletterSignup from '@/components/NewsletterSignup';
+import { toast } from '@/components/ui/use-toast';
 
 const Category = () => {
   const { slug } = useParams<{ slug: string }>();
   const [isLoading, setIsLoading] = useState(true);
-  const [category, setCategory] = useState<any>(null);
-  const [articles, setArticles] = useState<any[]>([]);
+  const [category, setCategory] = useState<CategoryType | null>(null);
+  const [articles, setArticles] = useState<Article[]>([]);
 
   useEffect(() => {
     if (slug) {
       setIsLoading(true);
       
-      // In a real app, this would be an API call
-      const foundCategory = getCategoryBySlug(slug);
-      const foundArticles = getArticlesByCategory(slug);
+      const loadData = async () => {
+        try {
+          const [categoryData, articlesData] = await Promise.all([
+            fetchCategoryBySlug(slug),
+            fetchArticlesByCategory(slug)
+          ]);
+          
+          setCategory(categoryData);
+          setArticles(articlesData);
+          
+          if (categoryData) {
+            document.title = `${categoryData.name} News | NewsDaily`;
+          }
+        } catch (error) {
+          console.error(`Error loading category ${slug}:`, error);
+          toast({
+            title: "Error",
+            description: "Failed to load category. Please try again later.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
       
-      setCategory(foundCategory);
-      setArticles(foundArticles);
-      
-      if (foundCategory) {
-        document.title = `${foundCategory.name} News | NewsDaily`;
-      }
-      
-      setIsLoading(false);
+      loadData();
     }
     
     window.scrollTo(0, 0);
@@ -68,7 +84,8 @@ const Category = () => {
         ) : category ? (
           <>
             <section className="container mx-auto px-4 py-8">
-              <h1 className="text-3xl md:text-4xl font-serif font-medium mb-6 animate-slide-down opacity-0" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
+              <h1 className="text-3xl md:text-4xl font-serif font-medium mb-6 animate-slide-down opacity-0" 
+                  style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
                 {category.name}
               </h1>
               
