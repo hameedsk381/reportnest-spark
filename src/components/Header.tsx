@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Search } from 'lucide-react';
 import { categories } from '@/lib/data';
+import { Logo } from './Logo';
 import UserMenu from './UserMenu';
 
 const Header = () => {
@@ -23,14 +24,8 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link 
-            to="/" 
-            className="text-2xl font-serif font-bold tracking-tight animate-slide-down opacity-0"
-            style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}
-          >
-            NewsDaily
-          </Link>
-
+        <Logo/>
+          
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">

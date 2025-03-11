@@ -1,19 +1,15 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom"
+import logo from '/logo.png'; // Adjust the path as needed
 
-const Logo = () => {
+export const Logo = () => {
   return (
-    <Link 
-      to="/"
-      className="animate-slide-down opacity-0"
-      style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}
-    >
+    <Link to="/" className="flex items-center gap-2  text-2xl font-bold font-serif">
       <img 
-        src="openvaartha-logo.jpg" 
-        alt="OpenVaartha Logo" 
-        className="h-20 w-20" 
+        src={logo} 
+        alt="Open vaartha logo" 
+        className="w-[5rem]"
       />
+      {/* <span>OpenVaartha</span> */}
     </Link>
-  );
-};
-
-export default Logo;
+  )
+}
