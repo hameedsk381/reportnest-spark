@@ -12,30 +12,61 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, UserCircle, Bookmark, Settings } from "lucide-react";
+import { fetchUserProfile } from '@/lib/supabase';
 
 const UserMenu = () => {
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (session) {
+        loadUserProfile();
+      } else {
+        setLoading(false);
+      }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
+        if (session) {
+          loadUserProfile();
+        } else {
+          setProfile(null);
+          setLoading(false);
+        }
       }
     );
 
     return () => subscription.unsubscribe();
   }, []);
+  
+  const loadUserProfile = async () => {
+    try {
+      const profileData = await fetchUserProfile();
+      setProfile(profileData);
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };
+
+  if (loading) {
+    return (
+      <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse"></div>
+    );
+  }
 
   if (!session) {
     return (
@@ -49,28 +80,40 @@ const UserMenu = () => {
     );
   }
 
-  // Get the first letter of the email for avatar fallback
-  const emailFirstLetter = session.user.email?.[0]?.toUpperCase() || 'U';
+  // Use display name if available, otherwise use email
+  const displayName = profile?.display_name || session.user.email?.split('@')[0] || 'User';
+  
+  // Get the first letter of the display name or email for avatar fallback
+  const avatarFallback = displayName?.[0]?.toUpperCase() || 'U';
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="focus:outline-none">
         <Avatar className="h-9 w-9 cursor-pointer border-2 border-primary">
-          <AvatarImage src="" alt="User avatar" />
-          <AvatarFallback>{emailFirstLetter}</AvatarFallback>
+          <AvatarImage src={profile?.avatar_url || ""} alt={displayName} />
+          <AvatarFallback>{avatarFallback}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer">
-          Profile
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link to="/profile">
+            <UserCircle className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer">
-          Saved Articles
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link to="/profile?tab=saved">
+            <Bookmark className="mr-2 h-4 w-4" />
+            <span>Saved Articles</span>
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer">
-          Settings
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link to="/profile?tab=settings">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem 

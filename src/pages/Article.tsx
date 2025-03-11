@@ -1,11 +1,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { getArticleBySlug, getLatestArticles, Article as ArticleType } from '@/lib/data';
+import { fetchArticleBySlug, fetchLatestArticles } from '@/lib/supabase';
+import { Article as ArticleType } from '@/lib/data';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ArticleCard from '@/components/ArticleCard';
 import NewsletterSignup from '@/components/NewsletterSignup';
+import { toast } from '@/components/ui/use-toast';
 
 const Article = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -15,20 +17,33 @@ const Article = () => {
 
   useEffect(() => {
     if (slug) {
-      // In a real app, this would be an API call
       setIsLoading(true);
-      const foundArticle = getArticleBySlug(slug);
       
-      if (foundArticle) {
-        setArticle(foundArticle);
-        document.title = `${foundArticle.title} | NewsDaily`;
-        
-        // Get related articles (in a real app, these would be more relevant)
-        const latest = getLatestArticles().filter(a => a.id !== foundArticle.id).slice(0, 3);
-        setRelatedArticles(latest);
-      }
+      const loadData = async () => {
+        try {
+          const articleData = await fetchArticleBySlug(slug);
+          setArticle(articleData);
+          
+          if (articleData) {
+            document.title = `${articleData.title} | NewsDaily`;
+            
+            // Get related articles (in a real app, these would be more relevant)
+            const latest = await fetchLatestArticles(4);
+            setRelatedArticles(latest.filter(a => a.id !== articleData.id).slice(0, 3));
+          }
+        } catch (error) {
+          console.error(`Error loading article ${slug}:`, error);
+          toast({
+            title: "Error",
+            description: "Failed to load article. Please try again later.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
       
-      setIsLoading(false);
+      loadData();
     }
     
     window.scrollTo(0, 0);
