@@ -379,4 +379,3 @@ export const getLatestArticles = (): Article[] => {
 export const getCategoryBySlug = (slug: string): Category | undefined => {
   return categories.find(category => category.slug === slug);
 };
-

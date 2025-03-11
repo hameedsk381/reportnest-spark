@@ -3,122 +3,99 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Search } from 'lucide-react';
 import { categories } from '@/lib/data';
+import UserMenu from '@/components/UserMenu';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      setIsScrolled(window.scrollY > 0);
     };
-
+    
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const toggleSearch = () => setSearchOpen(!searchOpen);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real application, this would trigger a search
-    console.log('Search query:', searchQuery);
-    setSearchOpen(false);
-  };
-
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white/90 dark:bg-black/90 backdrop-blur-md shadow-sm' : 'bg-transparent'
-      }`}
-    >
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-background/95 backdrop-blur-sm shadow-sm' : 'bg-background'}`}>
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link 
-            to="/" 
-            className="text-2xl font-serif font-bold tracking-tight animate-slide-down opacity-0"
-            style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}
-          >
+          <Link to="/" className="text-2xl font-bold font-serif">
             NewsDaily
           </Link>
-
+          
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8 animate-slide-down opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
-            {categories.map((category) => (
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
+              Home
+            </Link>
+            
+            {categories.slice(0, 5).map((category) => (
               <Link
                 key={category.id}
                 to={`/category/${category.slug}`}
-                className="text-sm font-medium hover:text-primary/70 transition-colors relative group"
+                className="text-sm font-medium hover:text-primary transition-colors"
               >
                 {category.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
             ))}
           </nav>
-
-          {/* Search and Mobile Menu Buttons */}
-          <div className="flex items-center space-x-4 animate-slide-down opacity-0" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
-            <button
-              onClick={toggleSearch}
-              className="p-2 rounded-full hover:bg-secondary transition-colors"
-              aria-label="Search"
-            >
+          
+          {/* Search and Mobile Menu Toggle */}
+          <div className="flex items-center space-x-4">
+            <button className="p-2 hover:bg-secondary rounded-full transition-colors" aria-label="Search">
               <Search size={20} />
             </button>
+            
+            <div className="hidden md:block">
+              <UserMenu />
+            </div>
+            
             <button
-              onClick={toggleMenu}
-              className="p-2 rounded-full hover:bg-secondary transition-colors md:hidden"
-              aria-label="Menu"
+              className="p-2 hover:bg-secondary rounded-full transition-colors md:hidden"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
-
-        {/* Search Overlay */}
-        {searchOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white dark:bg-black shadow-lg p-4 animate-fade-in">
-            <form onSubmit={handleSearchSubmit} className="flex">
-              <input
-                type="text"
-                placeholder="Search for articles..."
-                className="flex-1 p-2 border border-border focus:outline-none focus:ring-1 focus:ring-primary"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-              />
-              <button
-                type="submit"
-                className="bg-primary text-primary-foreground p-2 ml-2"
-              >
-                <Search size={20} />
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white dark:bg-black shadow-lg p-4 md:hidden animate-fade-in">
+      </div>
+      
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="md:hidden bg-background border-t border-border animate-in slide-in-from-top">
+          <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-4">
+              <Link 
+                to="/" 
+                className="text-lg font-medium py-2 hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </Link>
+              
               {categories.map((category) => (
                 <Link
                   key={category.id}
                   to={`/category/${category.slug}`}
-                  className="text-lg font-medium hover:text-primary/70 transition-colors p-2"
+                  className="text-lg font-medium py-2 hover:text-primary transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {category.name}
                 </Link>
               ))}
+              
+              <div className="pt-4 border-t border-border">
+                <UserMenu />
+              </div>
             </nav>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
 };
