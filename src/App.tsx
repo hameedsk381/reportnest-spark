@@ -9,8 +9,8 @@ import Article from "./pages/Article";
 import Category from "./pages/Category";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
-import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/AdminDashboard";
 
 // Create a client with production settings
 const queryClient = new QueryClient({
@@ -35,7 +35,7 @@ const App = () => (
           <Route path="/category/:slug" element={<Category />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
