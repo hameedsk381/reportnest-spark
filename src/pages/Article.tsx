@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { fetchArticleBySlug, fetchLatestArticles } from '@/lib/supabase';
@@ -8,6 +7,7 @@ import Footer from '@/components/Footer';
 import ArticleCard from '@/components/ArticleCard';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import { toast } from '@/components/ui/use-toast';
+import ShinyText from '@/components/ui/ShinyText';
 
 const Article = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -100,7 +100,7 @@ const Article = () => {
               
               {/* Title and Subtitle */}
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium leading-tight mb-4">
-                {article.title}
+             {article.title}
               </h1>
               {article.subtitle && (
                 <p className="text-xl md:text-2xl text-muted-foreground font-light mb-6">

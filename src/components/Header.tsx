@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Menu, X, Search } from 'lucide-react';
 import { categories } from '@/lib/data';
 import UserMenu from '@/components/UserMenu';
+import { Logo } from './Logo';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -23,9 +24,7 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-bold font-serif">
-            NewsDaily
-          </Link>
+        <Logo/>
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">

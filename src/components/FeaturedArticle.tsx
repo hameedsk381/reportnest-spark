@@ -2,6 +2,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Article } from '@/lib/data';
+import ShinyText from './ui/ShinyText';
 
 interface FeaturedArticleProps {
   article: Article;
@@ -59,7 +60,7 @@ const FeaturedArticle: React.FC<FeaturedArticleProps> = ({ article }) => {
               Featured
             </div>
             <h2 className="text-3xl md:text-5xl font-serif font-medium mb-3 max-w-4xl leading-tight">
-              {article.title}
+            <ShinyText text={article.title} speed={5} />
             </h2>
             {article.subtitle && (
               <p className="text-xl md:text-2xl font-light mb-6 max-w-3xl text-white/90">
