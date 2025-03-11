@@ -1,4 +1,3 @@
-
 export interface Article {
   id: string;
   title: string;
@@ -47,7 +46,7 @@ export const articles: Article[] = [
     },
     date: '2023-11-28',
     readTime: 5,
-    excerpt: 'Artificial intelligence is no longer confined to science fiction. It's in our homes, our pockets, and increasingly, in every aspect of our lives.',
+    excerpt: "Artificial intelligence is no longer confined to science fiction. It's in our homes, our pockets, and increasingly, in every aspect of our lives.",
     content: `
     <p>Artificial intelligence is no longer confined to science fiction. It's in our homes, our pockets, and increasingly, in every aspect of our lives. From the moment we wake up to smart alarms that monitored our sleep patterns, to the algorithmic recommendations shaping our media consumption, AI is quietly revolutionizing daily life.</p>
     
@@ -380,3 +379,4 @@ export const getLatestArticles = (): Article[] => {
 export const getCategoryBySlug = (slug: string): Category | undefined => {
   return categories.find(category => category.slug === slug);
 };
+
