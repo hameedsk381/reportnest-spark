@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { fetchArticleBySlug, fetchLatestArticles } from '@/lib/supabase';
+import { fetchArticleBySlug, fetchLatestArticles, fetchUserProfile } from '@/lib/supabase';
 import { Article as ArticleType } from '@/lib/data';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -8,12 +8,25 @@ import ArticleCard from '@/components/ArticleCard';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import { toast } from '@/components/ui/use-toast';
 import ShinyText from '@/components/ui/ShinyText';
+import ReactMarkdown from 'react-markdown';
+import { supabase } from '@/integrations/supabase/client';
 
 const Article = () => {
   const { slug } = useParams<{ slug: string }>();
   const [article, setArticle] = useState<ArticleType | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<ArticleType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userProfile = await fetchUserProfile();
+      setUser(userProfile);
+    };
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     if (slug) {
@@ -30,6 +43,15 @@ const Article = () => {
             // Get related articles (in a real app, these would be more relevant)
             const latest = await fetchLatestArticles(4);
             setRelatedArticles(latest.filter(a => a.id !== articleData.id).slice(0, 3));
+            
+            // Check if article is saved
+            const { data: savedArticle } = await supabase
+              .from('saved_articles')
+              .select('*')
+              .eq('article_id', articleData.id)
+              .single();
+            
+            setIsSaved(!!savedArticle);
           }
         } catch (error) {
           console.error(`Error loading article ${slug}:`, error);
@@ -49,7 +71,74 @@ const Article = () => {
     window.scrollTo(0, 0);
   }, [slug]);
 
-  // Format date
+  const handleShare = async () => {
+    if (article) {
+      const url = `${window.location.origin}/articles/${article.slug}`;
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: article.title,
+            text: article.subtitle || '',
+            url: url
+          });
+        } else {
+          await navigator.clipboard.writeText(url);
+          toast({
+            title: "Link copied!",
+            description: "Article link copied to clipboard.",
+          });
+        }
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    }
+  };
+
+  const handleSave = async () => {
+    if (article) {
+      try {
+        if (isSaved) {
+          // Remove from saved_articles
+          const { error } = await supabase
+            .from('saved_articles')
+            .delete()
+            .eq('article_id', article.id);
+          
+          if (!error) {
+            setIsSaved(false);
+            toast({
+              title: "Removed from saved",
+              description: "Article removed from your saved list.",
+            });
+          }
+        } else {
+          // Add to saved_articles
+          const { error } = await supabase
+            .from('saved_articles')
+            .insert([{ 
+              article_id: article.id,
+              user_id: user?.id 
+            }]);
+          
+          if (!error) {
+            setIsSaved(true);
+            toast({
+              title: "Saved!",
+              description: "Article added to your saved list.",
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error saving article:', error);
+        toast({
+          title: "Error",
+          description: "Failed to save article. Please try again later.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -133,10 +222,11 @@ const Article = () => {
               </figure>
               
               {/* Article Content */}
-              <div 
-                className="prose prose-lg max-w-none" 
-                dangerouslySetInnerHTML={{ __html: article.content }}
-              />
+              <div className="prose prose-lg max-w-none">
+                <ReactMarkdown>
+                  {article.content}
+                </ReactMarkdown>
+              </div>
               
               {/* Article Footer */}
               <div className="mt-12 pt-8 border-t border-border">
@@ -151,11 +241,19 @@ const Article = () => {
                     </Link>
                   </div>
                   <div className="flex space-x-4">
-                    <button className="text-sm font-medium hover:text-primary transition-colors">
+                    <button 
+                      onClick={handleShare}
+                      className="text-sm font-medium hover:text-primary transition-colors"
+                    >
                       Share
                     </button>
-                    <button className="text-sm font-medium hover:text-primary transition-colors">
-                      Save
+                    <button 
+                      onClick={handleSave}
+                      className={`text-sm font-medium ${
+                        isSaved ? 'text-primary' : 'hover:text-primary'
+                      } transition-colors`}
+                    >
+                      {isSaved ? 'Saved' : 'Save'}
                     </button>
                   </div>
                 </div>
@@ -165,7 +263,7 @@ const Article = () => {
             {/* Related Articles */}
             {relatedArticles.length > 0 && (
               <section className="container mx-auto px-4 py-12 max-w-6xl">
-                <h2 className="text-2xl font-serif font-medium mb-8">More Articles</h2>
+                <h2 className="极text-2xl font-serif font-medium mb-8">More Articles</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   {relatedArticles.map((relatedArticle, index) => (
                     <ArticleCard 

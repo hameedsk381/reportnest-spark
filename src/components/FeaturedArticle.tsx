@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Article } from '@/lib/data';
@@ -45,9 +44,9 @@ const FeaturedArticle: React.FC<FeaturedArticleProps> = ({ article }) => {
   };
 
   return (
-    <div ref={containerRef} className="group relative opacity-0" style={{ animationFillMode: 'forwards' }}>
+    <div ref={containerRef} className="group relative opacity-0 " style={{ animationFillMode: 'forwards' }}>
       <Link to={`/article/${article.slug}`} className="block overflow-hidden">
-        <div className="relative h-[70vh] max-h-[70vh] overflow-hidden rounded-lg">
+        <div className="relative h-[15rem] md:h-[25rem] overflow-hidden rounded-lg">
           <img
             src={article.image}
             alt={article.title}
@@ -55,30 +54,30 @@ const FeaturedArticle: React.FC<FeaturedArticleProps> = ({ article }) => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-70"></div>
           
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
-            <div className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium mb-4 uppercase tracking-wide">
-              Featured
+          <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+            <div className="inline-block px-2 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-medium mb-2 uppercase tracking-wide">
+            <ShinyText text="featured" disabled={false} speed={3} className='custom-class' />
             </div>
-            <h2 className="text-3xl md:text-5xl font-serif font-medium mb-3 max-w-4xl leading-tight">
-            <ShinyText text={article.title} speed={5} />
+            <h2 className="text-xl font-serif font-medium mb-2 leading-tight">
+              {article.title}
             </h2>
             {article.subtitle && (
-              <p className="text-xl md:text-2xl font-light mb-6 max-w-3xl text-white/90">
+              <p className="text-base font-light mb-3 text-white/90">
                 {article.subtitle}
               </p>
             )}
-            <p className="text-lg max-w-2xl mb-6 text-white/80">
+            <p className="text-sm mb-3 text-white/80">
               {article.excerpt}
             </p>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
               <img
                 src={article.author.avatar}
                 alt={article.author.name}
-                className="w-10 h-10 rounded-full object-cover border-2 border-white/50"
+                className="w-8 h-8 rounded-full object-cover border-2 border-white/50"
               />
               <div>
-                <div className="font-medium">{article.author.name}</div>
-                <div className="text-sm text-white/70">
+                <div className="text-sm font-medium">{article.author.name}</div>
+                <div className="text-xs text-white/70">
                   {formatDate(article.date)} • {article.readTime} min read
                 </div>
               </div>

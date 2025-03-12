@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +21,10 @@ const Profile = () => {
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     document.title = 'Your Profile | NewsDaily';
@@ -91,6 +94,77 @@ const Profile = () => {
       });
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!currentPassword) {
+      toast({
+        title: "Error",
+        description: "Please enter your current password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setChangingPassword(true);
+    
+    try {
+      // First reauthenticate with current password
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword
+      });
+
+      if (authError) {
+        throw new Error("Current password is incorrect");
+      }
+
+      // Then update password
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "Your password has been updated successfully.",
+      });
+
+      // Clear password fields
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      console.error('Error changing password:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to change password. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -217,14 +291,62 @@ const Profile = () => {
                   </p>
                   
                   <div className="space-y-4">
+                    <div className="space-y-4">
+                      <Input
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Current Password"
+                      />
+                      <Input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="New Password"
+                      />
+                      <Input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm New Password"
+                      />
+                    </div>
                     <Button 
                       variant="outline" 
-                      onClick={() => toast({
-                        title: "Coming Soon",
-                        description: "This feature will be available soon.",
-                      })}
+                      onClick={async () => {
+                        setChangingPassword(true);
+                        try {
+                          if (newPassword !== confirmPassword) {
+                            throw new Error("New passwords do not match");
+                          }
+                          
+                          const { error } = await supabase.auth.updateUser({
+                            password: newPassword
+                          });
+                          
+                          if (error) throw error;
+                          
+                          toast({
+                            title: "Success",
+                            description: "Password changed successfully",
+                          });
+                          
+                          setCurrentPassword('');
+                          setNewPassword('');
+                          setConfirmPassword('');
+                        } catch (error) {
+                          toast({
+                            title: "Error",
+                            description: error.message,
+                            variant: "destructive",
+                          });
+                        } finally {
+                          setChangingPassword(false);
+                        }
+                      }}
+                      disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
                     >
-                      Change Password
+                      {changingPassword ? "Changing..." : "Change Password"}
                     </Button>
                     
                     <Button 

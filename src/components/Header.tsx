@@ -1,8 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Search } from 'lucide-react';
-import { categories } from '@/lib/data';
 import { Logo } from './Logo';
 import UserMenu from './UserMenu';
 
@@ -24,23 +22,19 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-        <Logo/>
+          <Logo/>
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
               Home
             </Link>
-            
-            {categories.slice(0, 5).map((category) => (
-              <Link
-                key={category.id}
-                to={`/category/${category.slug}`}
-                className="text-sm font-medium hover:text-primary transition-colors"
-              >
-                {category.name}
-              </Link>
-            ))}
+            <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
+              About
+            </Link>
+            <Link to="/contribute" className="text-sm font-medium hover:text-primary transition-colors">
+              Contribute
+            </Link>
           </nav>
           
           {/* Search and Mobile Menu Toggle */}
@@ -76,17 +70,20 @@ const Header = () => {
               >
                 Home
               </Link>
-              
-              {categories.map((category) => (
-                <Link
-                  key={category.id}
-                  to={`/category/${category.slug}`}
-                  className="text-lg font-medium py-2 hover:text-primary transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {category.name}
-                </Link>
-              ))}
+              <Link 
+                to="/about" 
+                className="text-lg font-medium py-2 hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                About
+              </Link>
+              <Link 
+                to="/contribute" 
+                className="text-lg font-medium py-2 hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contribute
+              </Link>
               
               <div className="pt-4 border-t border-border">
                 <UserMenu />
