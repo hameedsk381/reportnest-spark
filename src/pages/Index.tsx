@@ -20,9 +20,9 @@ const Index = () => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   useLayoutEffect(() => {
-    // Preload animations before showing content
+    // Reduce initial animation time
     setIsAnimating(true);
-    const timer = setTimeout(() => setIsAnimating(false), 500);
+    const timer = setTimeout(() => setIsAnimating(false), 300);
     return () => clearTimeout(timer);
   }, []);
 
@@ -39,10 +39,12 @@ const Index = () => {
           fetchLatestArticles(6)
         ]);
         
-        // Stagger state updates for smoother rendering
-        setTimeout(() => setFeaturedArticles(featured), 100);
-        setTimeout(() => setTrendingArticles(trending), 200);
-        setTimeout(() => setLatestArticles(latest), 300);
+        // Batch state updates to reduce re-renders
+        setTimeout(() => {
+          setFeaturedArticles(featured);
+          setTrendingArticles(trending);
+          setLatestArticles(latest);
+        }, 100);
       } catch (error) {
         console.error('Error loading home page data:', error);
         toast({
@@ -51,7 +53,7 @@ const Index = () => {
           variant: "destructive",
         });
       } finally {
-        setTimeout(() => setIsLoading(false), 500);
+        setTimeout(() => setIsLoading(false), 300);
       }
     };
     
@@ -74,9 +76,9 @@ const Index = () => {
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-8">
           <div className="max-w-7xl mx-auto">
             {isLoading || isAnimating ? (
-              <div className="h-[50vh] bg-gray-200 animate-pulse rounded-lg transition-opacity duration-500 ease-in-out" />
+              <div className="h-[50vh] bg-gray-200 animate-pulse rounded-lg transition-opacity duration-300 ease-in-out" />
             ) : featuredArticles.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-6">
                   {featuredArticles.slice(0, 1).map((article) => (
                     <FeaturedArticle key={article.id} article={article} />
@@ -91,7 +93,7 @@ const Index = () => {
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 animate-fade-in">
+              <div className="text-center py-8">
                 <p className="text-muted-foreground">No featured articles available</p>
               </div>
             )}
@@ -100,13 +102,12 @@ const Index = () => {
 
         {/* Trending Articles */}
         <section className="container mx-auto px-4 pb-8">
-          <h2 className="text-2xl font-serif font-medium mb-6 animate-slide-up opacity-0" 
-              style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
+          <h2 className="text-2xl font-serif font-medium mb-6">
             Trending Now
           </h2>
           
           {isLoading || isAnimating ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 animate-pulse">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="space-y-3">
                   <div className="aspect-video bg-gray-200 rounded-lg" />
@@ -116,13 +117,13 @@ const Index = () => {
               ))}
             </div>
           ) : trendingArticles.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
               {trendingArticles.map((article, index) => (
                 <ArticleCard key={article.id} article={article} index={index} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 animate-fade-in">
+            <div className="text-center py-8">
               <p className="text-muted-foreground">No trending articles available</p>
             </div>
           )}
@@ -130,13 +131,12 @@ const Index = () => {
 
         {/* Latest Articles */}
         <section className="container mx-auto px-4 py-8">
-          <h2 className="text-2xl font-serif font-medium mb-6 animate-slide-up opacity-0" 
-              style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
+          <h2 className="text-2xl font-serif font-medium mb-6">
             Latest Articles
           </h2>
           
           {isLoading || isAnimating ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 animate-pulse">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="space-y-3">
                   <div className="aspect-video bg-gray-200 rounded-lg" />
@@ -146,13 +146,13 @@ const Index = () => {
               ))}
             </div>
           ) : latestArticles.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
               {latestArticles.map((article, index) => (
                 <ArticleCard key={article.id} article={article} index={index} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 animate-fade-in">
+            <div className="text-center py-8">
               <p className="text-muted-foreground">No articles available</p>
             </div>
           )}
@@ -160,18 +160,18 @@ const Index = () => {
       
         <ScrollVelocity
           texts={['OpenVaartha', 'OpnVaartha']} 
-          velocity={30} 
+          velocity={20} // Reduced velocity for smoother scrolling
           className="custom-scroll-text"
         />
         <RollingGallery autoplay={true} pauseOnHover={false} />
         
         <section className="container mx-auto px-4 pb-8">
           {isLoading || isAnimating ? (
-            <div className="w-full aspect-video bg-gray-200 rounded-lg animate-pulse" />
+            <div className="w-full aspect-video bg-gray-200 rounded-lg" />
           ) : featuredArticles.length > 0 ? (
             <FeaturedSection />
           ) : (
-            <div className="text-center py-12 animate-fade-in">
+            <div className="text-center py-12">
               <p className="text-muted-foreground">No featured articles available</p>
             </div>
           )}
