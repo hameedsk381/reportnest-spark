@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import AdminDashboard from "@/pages/AdminDashboard";
+import { Tables } from "@/integrations/supabase/types";
 import { Loader } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
@@ -12,13 +13,17 @@ const useAdmin = () => {
     useEffect(() => {
       const checkAdmin = async () => {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return setIsAdmin(false);
+        if (!user) {
+          setIsAdmin(false);
+          setLoading(false);
+          return;
+        }
   
         const { data: profile } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', user.id)
-          .single<{ role: string }>();
+          .single();
 
         setIsAdmin(profile?.role === 'admin');
         setLoading(false);
@@ -31,11 +36,13 @@ const useAdmin = () => {
   };
   
   // Use in admin components
-  const AdminRoute = () => {
+  export const AdminRoute = () => {
     const { isAdmin, loading } = useAdmin();
   
-    if (loading) return <Loader />;
+    if (loading) return <div className="flex justify-center items-center h-screen"><Loader className="animate-spin" /></div>;
     if (!isAdmin) return <Navigate to="/" />;
     
-    return <AdminDashboard />;
+    return <Navigate to="/admin" />;
   };
+
+export default useAdmin;
