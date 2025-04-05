@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { Article, Category } from "@/types/types";
+import { Article, Category, DatabaseArticle } from "@/types/types";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import ReactMarkdown from 'react-markdown';
@@ -20,6 +21,28 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CopyIcon, Share2Icon } from "lucide-react";
+
+// Helper function to transform database article to our Article type
+const transformDatabaseArticle = (dbArticle: DatabaseArticle): Article => {
+  return {
+    id: dbArticle.id,
+    title: dbArticle.title,
+    subtitle: dbArticle.subtitle || undefined,
+    slug: dbArticle.slug,
+    category: dbArticle.category,
+    image: dbArticle.image,
+    author: {
+      name: dbArticle.author_name,
+      avatar: dbArticle.author_avatar,
+    },
+    date: dbArticle.date.toString(),
+    readTime: dbArticle.read_time,
+    excerpt: dbArticle.excerpt,
+    content: dbArticle.content,
+    featured: dbArticle.featured || false,
+    trending: dbArticle.trending || false,
+  };
+};
 
 const ArticleManager = () => {
     const [articles, setArticles] = useState<Article[]>([]);
@@ -35,7 +58,11 @@ const ArticleManager = () => {
         const { data: articlesData } = await supabase.from('articles').select('*');
         const { data: categoriesData } = await supabase.from('categories').select('*');
         
-        if (articlesData) setArticles(articlesData);
+        if (articlesData) {
+          const transformedArticles = articlesData.map(transformDatabaseArticle);
+          setArticles(transformedArticles);
+        }
+        
         if (categoriesData) setCategories(categoriesData.map(cat => ({
             ...cat,
             updated_at: (cat as any).updated_at || cat.created_at
@@ -85,17 +112,18 @@ const ArticleManager = () => {
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       
+      // Transform Article type to database format for saving
       const articleData = {
         ...formData,
         slug: formData.title?.toLowerCase().replace(/ /g, '-'),
         updated_at: new Date().toISOString(),
-        author_avatar: formData.author_avatar || '',
-        author_name: formData.author_name || '',
+        author_avatar: formData.author?.avatar || '',
+        author_name: formData.author?.name || '',
         category: formData.category || '',
         content: formData.content || '',
         excerpt: formData.excerpt || '',
         image: formData.image || '',
-        read_time: formData.read_time || 0,
+        read_time: formData.readTime || 0,
         date: formData.date || new Date().toISOString()
       };
 
@@ -108,7 +136,10 @@ const ArticleManager = () => {
       if (!error) {
         toast("Article saved successfully!");
         const { data: articlesData } = await supabase.from('articles').select('*');
-        if (articlesData) setArticles(articlesData);
+        if (articlesData) {
+          const transformedArticles = articlesData.map(transformDatabaseArticle);
+          setArticles(transformedArticles);
+        }
         setFormData({ featured: false, trending: false });
       } else {
         toast.error("Error saving article");
@@ -274,8 +305,11 @@ const ArticleManager = () => {
               <div>
                 <Label>Author Name</Label>
                 <Input 
-                  value={formData.author_name || ''}
-                  onChange={e => setFormData({ ...formData, author_name: e.target.value })}
+                  value={formData.author?.name || ''}
+                  onChange={e => setFormData({ 
+                    ...formData, 
+                    author: { ...formData.author, name: e.target.value } as any 
+                  })}
                   required
                 />
               </div>
@@ -283,8 +317,11 @@ const ArticleManager = () => {
               <div>
                 <Label>Author Avatar URL</Label>
                 <Input 
-                  value={formData.author_avatar || ''}
-                  onChange={e => setFormData({ ...formData, author_avatar: e.target.value })}
+                  value={formData.author?.avatar || ''}
+                  onChange={e => setFormData({ 
+                    ...formData, 
+                    author: { ...formData.author, avatar: e.target.value } as any 
+                  })}
                   required
                 />
               </div>
@@ -293,8 +330,11 @@ const ArticleManager = () => {
                 <Label>Read Time (minutes)</Label>
                 <Input 
                   type="number"
-                  value={formData.read_time || 0}
-                  onChange={e => setFormData({ ...formData, read_time: parseInt(e.target.value) })}
+                  value={formData.readTime || 0}
+                  onChange={e => setFormData({ 
+                    ...formData, 
+                    readTime: parseInt(e.target.value) 
+                  })}
                   required
                 />
               </div>
@@ -333,4 +373,5 @@ const ArticleManager = () => {
       </div>
     );
   };
-  export default ArticleManager;
+  
+export default ArticleManager;
