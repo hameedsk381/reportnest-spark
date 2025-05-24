@@ -1,6 +1,13 @@
 
 import { fetchArticles, fetchCategories } from '@/lib/supabase';
 
+interface SitemapPage {
+  url: string;
+  changefreq: string;
+  priority: string;
+  lastmod?: string;
+}
+
 export const generateSitemap = async () => {
   const baseUrl = window.location.origin;
   const currentDate = new Date().toISOString();
@@ -11,19 +18,19 @@ export const generateSitemap = async () => {
       fetchCategories()
     ]);
 
-    const staticPages = [
+    const staticPages: SitemapPage[] = [
       { url: '/', changefreq: 'daily', priority: '1.0' },
       { url: '/about', changefreq: 'monthly', priority: '0.8' },
       { url: '/contribute', changefreq: 'monthly', priority: '0.7' },
     ];
 
-    const categoryPages = categories.map(category => ({
+    const categoryPages: SitemapPage[] = categories.map(category => ({
       url: `/category/${category.slug}`,
       changefreq: 'weekly',
       priority: '0.8'
     }));
 
-    const articlePages = articles.map(article => ({
+    const articlePages: SitemapPage[] = articles.map(article => ({
       url: `/article/${article.slug}`,
       changefreq: 'monthly',
       priority: '0.9',
