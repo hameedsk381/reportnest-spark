@@ -1,7 +1,9 @@
 
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { Calendar, Clock, User } from 'lucide-react';
 import { Article } from '@/lib/data';
+import { Badge } from '@/components/ui/badge';
 
 interface ArticleCardProps {
   article: Article;
@@ -9,82 +11,86 @@ interface ArticleCardProps {
 }
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article, index = 0 }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          cardRef.current?.classList.add('animate-slide-up');
-          cardRef.current?.classList.remove('opacity-0');
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
-    }
-
-    return () => {
-      if (cardRef.current) {
-        observer.unobserve(cardRef.current);
-      }
-    };
-  }, []);
-
-  // Format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
   return (
-    <div 
-      ref={cardRef} 
-      className="group opacity-0"
-      style={{ animationDelay: `${0.1 * index}s`, animationFillMode: 'forwards' }}
+    <article 
+      className="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 ease-out border border-gray-100 animate-slide-up opacity-0"
+      style={{ 
+        animationDelay: `${index * 100}ms`, 
+        animationFillMode: 'forwards' 
+      }}
     >
-      <Link to={`/article/${article.slug}`} className="block overflow-hidden">
-        <div className="relative overflow-hidden rounded-lg aspect-[16/9] mb-4">
-          <img
-            src={article.image}
-            alt={article.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-            <span className="uppercase tracking-wider">{article.category}</span>
-            <span>•</span>
-            <time dateTime={article.date}>{formatDate(article.date)}</time>
-            <span>•</span>
+      {/* Image Container */}
+      <div className="relative aspect-video overflow-hidden bg-gray-100">
+        <img
+          src={article.image}
+          alt={article.title}
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        
+        {/* Category Badge */}
+        <Badge 
+          variant="secondary" 
+          className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-gray-900 border-0 shadow-sm font-medium"
+        >
+          {article.category}
+        </Badge>
+      </div>
+
+      {/* Content */}
+      <div className="p-5">
+        {/* Meta Information */}
+        <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
+          <div className="flex items-center gap-1">
+            <Calendar className="w-3 h-3" />
+            <time dateTime={article.date}>
+              {new Date(article.date).toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric' 
+              })}
+            </time>
+          </div>
+          <div className="flex items-center gap-1">
+            <Clock className="w-3 h-3" />
             <span>{article.readTime} min read</span>
           </div>
-          <h3 className="text-xl font-serif font-medium line-clamp-2 group-hover:text-primary/80 transition-colors duration-300">
+        </div>
+
+        {/* Title */}
+        <Link 
+          to={`/article/${article.slug}`}
+          className="block group/link"
+        >
+          <h3 className="font-serif text-lg font-semibold text-gray-900 leading-tight mb-3 group-hover/link:text-primary transition-colors duration-200">
             {article.title}
           </h3>
-          <p className="text-muted-foreground line-clamp-2 text-sm">
-            {article.excerpt}
-          </p>
-          <div className="flex items-center space-x-3 pt-2">
+        </Link>
+
+        {/* Excerpt */}
+        <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-2">
+          {article.excerpt}
+        </p>
+
+        {/* Author */}
+        <div className="flex items-center gap-2">
+          {article.author.avatar && (
             <img
               src={article.author.avatar}
               alt={article.author.name}
-              className="w-8 h-8 rounded-full object-cover"
+              className="w-6 h-6 rounded-full object-cover"
             />
-            <span className="text-sm font-medium">{article.author.name}</span>
+          )}
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <User className="w-3 h-3" />
+            <span>{article.author.name}</span>
           </div>
         </div>
-      </Link>
-    </div>
+      </div>
+
+      {/* Hover Effect Overlay */}
+      <div className="absolute inset-0 ring-1 ring-primary/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+    </article>
   );
 };
 

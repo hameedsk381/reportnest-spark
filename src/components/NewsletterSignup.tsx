@@ -1,55 +1,102 @@
 
 import React, { useState } from 'react';
-import { useToast } from "@/components/ui/use-toast";
+import { Mail, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { toast } from '@/components/ui/use-toast';
 
 const NewsletterSignup = () => {
   const [email, setEmail] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    
+    if (!email) {
       toast({
-        title: "Successfully subscribed!",
-        description: "Thank you for subscribing to our newsletter.",
-        duration: 5000,
+        title: "Email required",
+        description: "Please enter your email address",
+        variant: "destructive",
       });
-      setEmail('');
-    }, 1500);
+      return;
+    }
+
+    setIsLoading(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    setIsSubmitted(true);
+    setIsLoading(false);
+    
+    toast({
+      title: "Welcome aboard!",
+      description: "You've successfully subscribed to our newsletter.",
+    });
   };
 
-  return (
-    <div className="bg-secondary/50 backdrop-blur-sm p-8 rounded-lg">
-      <div className="max-w-lg mx-auto">
-        <h3 className="text-2xl font-serif font-medium mb-2">Stay updated</h3>
-        <p className="text-muted-foreground mb-6">
-          Subscribe to our newsletter to receive the latest news and updates directly in your inbox.
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Your email address"
-              required
-              className="flex-1 p-3 rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="bg-primary text-primary-foreground px-6 py-3 rounded-md font-medium transition-colors hover:bg-primary/90 disabled:opacity-70"
-            >
-              {isLoading ? 'Subscribing...' : 'Subscribe'}
-            </button>
+  if (isSubmitted) {
+    return (
+      <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl p-8 text-center animate-scale-in">
+        <div className="max-w-md mx-auto">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-green-600" />
           </div>
-          <p className="text-xs text-muted-foreground">
-            By subscribing, you agree to our privacy policy and consent to receive updates from our company.
+          <h3 className="text-2xl font-serif font-bold text-gray-900 mb-2">
+            Thank you for subscribing!
+          </h3>
+          <p className="text-gray-600">
+            You'll receive our latest news and articles directly in your inbox.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl p-8 lg:p-12">
+      <div className="max-w-2xl mx-auto text-center">
+        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Mail className="w-8 h-8 text-primary" />
+        </div>
+        
+        <h3 className="text-3xl font-serif font-bold text-gray-900 mb-4">
+          Stay Informed
+        </h3>
+        
+        <p className="text-lg text-gray-600 mb-8 max-w-lg mx-auto">
+          Get the latest news and insights delivered straight to your inbox. 
+          Join our community of informed readers.
+        </p>
+
+        <form onSubmit={handleSubmit} className="max-w-md mx-auto">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1">
+              <Input
+                type="email"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-12 px-4 bg-white border-0 rounded-xl shadow-sm focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                disabled={isLoading}
+              />
+            </div>
+            <Button
+              type="submit"
+              className="h-12 px-8 bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                'Subscribe'
+              )}
+            </Button>
+          </div>
+          
+          <p className="text-sm text-gray-500 mt-4">
+            No spam, unsubscribe at any time.
           </p>
         </form>
       </div>
