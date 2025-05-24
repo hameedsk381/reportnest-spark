@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Search } from 'lucide-react';
-import Logo from './Logo';
+import { Logo } from './Logo';
 import UserMenu from './UserMenu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
