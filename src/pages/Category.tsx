@@ -9,12 +9,23 @@ import CategoryList from '@/components/CategoryList';
 import ArticleCard from '@/components/ArticleCard';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import { toast } from '@/components/ui/use-toast';
+import { useSEO } from '@/hooks/useSEO';
+import { generateBreadcrumbStructuredData, injectStructuredData } from '@/utils/structuredData';
 
 const Category = () => {
   const { slug } = useParams<{ slug: string }>();
   const [isLoading, setIsLoading] = useState(true);
   const [category, setCategory] = useState<CategoryType | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
+
+  // SEO optimization for category pages
+  useSEO({
+    title: category ? `${category.name} News | OpenVaartha` : 'Category | OpenVaartha',
+    description: category ? `Latest ${category.name.toLowerCase()} news and articles on OpenVaartha. Stay updated with the latest stories.` : 'Browse news by category on OpenVaartha',
+    keywords: category ? `${category.name.toLowerCase()}, news, articles, OpenVaartha` : 'news categories, articles',
+    url: window.location.href,
+    type: 'website'
+  });
 
   useEffect(() => {
     if (slug) {
@@ -31,7 +42,12 @@ const Category = () => {
           setArticles(articlesData);
           
           if (categoryData) {
-            document.title = `${categoryData.name} News | NewsDaily`;
+            // Inject breadcrumb structured data
+            const breadcrumbs = [
+              { name: 'Home', url: window.location.origin },
+              { name: categoryData.name, url: window.location.href }
+            ];
+            injectStructuredData(generateBreadcrumbStructuredData(breadcrumbs));
           }
         } catch (error) {
           console.error(`Error loading category ${slug}:`, error);

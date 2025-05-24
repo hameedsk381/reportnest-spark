@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { fetchFeaturedArticles, fetchTrendingArticles, fetchLatestArticles } from '@/lib/supabase';
 import { Article } from '@/lib/data';
@@ -11,6 +12,8 @@ import { FeaturedSection } from '@/components/FeaturedSection';
 import ScrollVelocity from '@/components/ScrollVelocity/ScrollVelocity';
 import RollingGallery from '@/components/RollingGallery/RollingGallery';
 import FeaturedArticle from '@/components/FeaturedArticle';
+import { useSEO } from '@/hooks/useSEO';
+import { generateWebsiteStructuredData, injectStructuredData } from '@/utils/structuredData';
 
 const Index = () => {
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
@@ -19,7 +22,20 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // SEO optimization for homepage
+  useSEO({
+    title: 'OpenVaartha - The Truth Openly Told | Latest News & Articles',
+    description: 'Stay informed with OpenVaartha - your trusted source for the latest news, breaking stories, and in-depth articles. The truth openly told.',
+    keywords: 'news, breaking news, articles, current events, journalism, OpenVaartha, truth, latest news',
+    image: `${window.location.origin}/openvaartha-logo.jpg`,
+    url: window.location.href,
+    type: 'website'
+  });
+
   useLayoutEffect(() => {
+    // Inject website structured data
+    injectStructuredData(generateWebsiteStructuredData());
+    
     // Reduce initial animation time
     setIsAnimating(true);
     const timer = setTimeout(() => setIsAnimating(false), 300);

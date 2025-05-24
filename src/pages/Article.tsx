@@ -7,9 +7,10 @@ import Footer from '@/components/Footer';
 import ArticleCard from '@/components/ArticleCard';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import { toast } from '@/components/ui/use-toast';
-import ShinyText from '@/components/ui/ShinyText';
 import ReactMarkdown from 'react-markdown';
 import { supabase } from '@/integrations/supabase/client';
+import { useSEO } from '@/hooks/useSEO';
+import { generateArticleStructuredData, generateBreadcrumbStructuredData, injectStructuredData } from '@/utils/structuredData';
 
 const Article = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -18,6 +19,21 @@ const Article = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [user, setUser] = useState<any>(null);
+
+  // SEO optimization for article pages
+  useSEO({
+    title: article ? `${article.title} | OpenVaartha` : 'Loading Article | OpenVaartha',
+    description: article?.excerpt || 'Read the latest news and articles on OpenVaartha',
+    keywords: article ? `${article.category}, news, ${article.title.split(' ').slice(0, 5).join(', ')}` : 'news, articles',
+    image: article?.image,
+    url: window.location.href,
+    type: 'article',
+    publishedTime: article?.date,
+    modifiedTime: article?.date,
+    author: article?.author.name,
+    section: article?.category,
+    tags: article ? [article.category] : undefined
+  });
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -38,7 +54,16 @@ const Article = () => {
           setArticle(articleData);
           
           if (articleData) {
-            document.title = `${articleData.title} | NewsDaily`;
+            // Inject article structured data
+            injectStructuredData(generateArticleStructuredData(articleData));
+            
+            // Inject breadcrumb structured data
+            const breadcrumbs = [
+              { name: 'Home', url: window.location.origin },
+              { name: articleData.category, url: `${window.location.origin}/category/${articleData.category}` },
+              { name: articleData.title, url: window.location.href }
+            ];
+            injectStructuredData(generateBreadcrumbStructuredData(breadcrumbs));
             
             // Get related articles (in a real app, these would be more relevant)
             const latest = await fetchLatestArticles(4);
